@@ -19,7 +19,7 @@ public class GamePlay : MonoBehaviour
     public int playerRoundWin;
     public int computerRoundWin;
     public bool isDisabled;
-    public bool[,] ChessGrid;
+    //public bool[,] ChessGrid;
     public bool isPlayerTurn;
     private bool _isPlayerWin;
     public GameObject winImage;
@@ -57,13 +57,13 @@ public class GamePlay : MonoBehaviour
         endCanvas.SetActive(false);
         hasEndRound = false;
         isDisabled = false;
-        for (int i = 0; i < 6; i++)
-        {
-            for (int j = 0; j < 6; j++)
-            {
-                ChessGrid[i, j] = false;
-            }
-        }
+        // for (int i = 0; i < 6; i++)
+        // {
+        //     for (int j = 0; j < 6; j++)
+        //     {
+        //         ChessGrid[i, j] = false;
+        //     }
+        // }
         isPlayerTurn = true;
         canCallComputer = false;
     }
@@ -89,7 +89,8 @@ public class GamePlay : MonoBehaviour
     {
         StartCoroutine(BackToMenuSound());
     }
-
+    
+    
     private IEnumerator BackToMenuSound()
     {
         backGroundMusic.PlaySound(backGroundMusic.buttonSound);
@@ -103,7 +104,7 @@ public class GamePlay : MonoBehaviour
         {
             RaycastHit2D[] res = new RaycastHit2D[6];
             int hits = Physics2D.RaycastNonAlloc(firstRightPos + new Vector2(i * 0.693f, i * 0.693f),
-                new Vector2(-0.5f, 0.5f), res, Mathf.Infinity);
+                new Vector2(-0.5f, 0.5f), res, Mathf.Infinity, 1 << 6);
             if (hits >= 4)
             {
                 float firstPPos = 20f;
@@ -198,7 +199,7 @@ public class GamePlay : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             RaycastHit2D[] res = new RaycastHit2D[6];
-            int hits = Physics2D.RaycastNonAlloc(firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), res, Mathf.Infinity);
+            int hits = Physics2D.RaycastNonAlloc(firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), res, Mathf.Infinity, 1 << 6);
             if (hits >= 4)
             {
                 float firstPPos = 20f;
@@ -290,7 +291,10 @@ public class GamePlay : MonoBehaviour
                 }
             }
         }
-        canCallComputer = true;
+        if (!hasEndRound)
+        {
+            canCallComputer = true;
+        }
     }
 
     private void DisplayDraw()
@@ -354,7 +358,7 @@ public class GamePlay : MonoBehaviour
     
     private void Awake()
     {
-        ChessGrid = new bool[6,6];    // false: empty      true: has object
+        // ChessGrid = new bool[6,6];    // false: empty      true: has object
         isPlayerTurn = true;
         playerTurn.SetActive(false);
         computerTurn.SetActive(false);
