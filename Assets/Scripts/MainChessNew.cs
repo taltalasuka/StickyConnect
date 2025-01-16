@@ -10,12 +10,17 @@ public class MainChessNew : MonoBehaviour
     private Vector2 _originalPos = new Vector2(0f, -4.35f);
     public GamePlay gamePlay;
     public bool hasCallComputer;
+    public SpriteRenderer sp;
+    public Sprite[] chessSprites;
     
     private void OnMouseDrag()
     {
-        if (!gamePlay.isPlayerTurn)
+        if (gamePlay.backGroundMusic.mode < 4)
         {
-            return;
+            if (!gamePlay.isPlayerTurn)
+            {
+                return;
+            }
         }
         Vector2 temp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (temp.y <= 0.463f)
@@ -34,16 +39,23 @@ public class MainChessNew : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if (!gamePlay.isPlayerTurn)
+        if (gamePlay.backGroundMusic.mode < 4)
         {
-            return;
+            if (!gamePlay.isPlayerTurn)
+            {
+                return;
+            }
         }
         if (!Mathf.Approximately(transform.position.x, _originalPos.x))
         {
             if (CanAdd(transform.position))
             {
-                StartCoroutine(AddChess(transform.position, gamePlay.playerChess));
+                StartCoroutine(AddChess(transform.position, gamePlay.isPlayerTurn ? gamePlay.playerChess : gamePlay.computerChess));
                 gamePlay.isPlayerTurn = !gamePlay.isPlayerTurn;
+                if (gamePlay.backGroundMusic.mode == 4)
+                {
+                    sp.sprite = chessSprites[gamePlay.isPlayerTurn ? 0 : 1];
+                }
                 hasCallComputer = false;
                 gamePlay.canCallComputer = false;
             }
@@ -76,7 +88,7 @@ public class MainChessNew : MonoBehaviour
         {
             StartCoroutine(ChessBehavior(res[i].transform, pos.x < 0));
         }
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.7f);
         gamePlay.CheckWin();
     }
 
@@ -88,7 +100,7 @@ public class MainChessNew : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(tran.position, isFromLeft ? new Vector2(1f, -1f) : new Vector2(-1f, -1f));
         if (hit)
         {
-            if (!Mathf.Approximately(tran.position.y - 0.693f, hit.transform.position.y))
+            if (tran.position.y - 0.693f - hit.transform.position.y > 0.01f) //!Mathf.Approximately(tran.position.y - 0.693f, hit.transform.position.y)
             {
                 StartCoroutine(MovingAnim(0.25f, tran, hit.transform.position + new Vector3(isFromLeft ? -0.693f : 0.693f, 0.693f, 0f)));
                 yield return new WaitForSeconds(0.25f);
@@ -112,43 +124,83 @@ public class MainChessNew : MonoBehaviour
         trans.position = end;
     }
 
-    private IEnumerator ComputerMove()
+    private IEnumerator ComputerMove()  //right first
     {
         hasCallComputer = true;
         yield return new WaitForSeconds(1f);
         bool hasAdd = false;
+        int t1;
+        t1 = Random.Range(0, 2);
         for (int i = 0; i < 6; i++)
         {
-            if (CanAdd(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f)))
+            if (t1 == 0)
             {
-                RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
-                if (hit)
+                if (CanAdd(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f)))
                 {
-                    if (hit.transform.CompareTag("PlayerChess"))
+                    RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                    if (hit)
                     {
-                        StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), gamePlay.computerChess));
-                        hasAdd = true;
-                        break;
-                    }
-                }       
+                        if (hit.transform.CompareTag("PlayerChess"))
+                        {
+                            StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                            hasAdd = true;
+                            break;
+                        }
+                    }       
+                }
+            }
+            else
+            {
+                if (CanAdd(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f)))
+                {
+                    RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                    if (hit)
+                    {
+                        if (hit.transform.CompareTag("PlayerChess"))
+                        {
+                            StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                            hasAdd = true;
+                            break;
+                        }
+                    }       
+                }
             }
         }
         if (!hasAdd)
         {
             for (int i = 0; i < 6; i++)
             {
-                if (CanAdd(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f)))
+                if (t1 == 0)
                 {
-                    RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
-                    if (hit)
+                    if (CanAdd(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f)))
                     {
-                        if (hit.transform.CompareTag("PlayerChess"))
+                        RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                        if (hit)
                         {
-                            StartCoroutine(AddChess(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), gamePlay.computerChess));
-                            hasAdd = true;
-                            break;
-                        }
-                    }       
+                            if (hit.transform.CompareTag("PlayerChess"))
+                            {
+                                StartCoroutine(AddChess(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                                hasAdd = true;
+                                break;
+                            }
+                        }       
+                    }
+                }
+                else
+                {
+                    if (CanAdd(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f)))
+                    {
+                        RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                        if (hit)
+                        {
+                            if (hit.transform.CompareTag("PlayerChess"))
+                            {
+                                StartCoroutine(AddChess(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                                hasAdd = true;
+                                break;
+                            }
+                        }       
+                    }
                 }
             }
         }
@@ -160,19 +212,92 @@ public class MainChessNew : MonoBehaviour
         gamePlay.isPlayerTurn = true;
     }
 
-    private IEnumerator ComputerMoveAlt1()
+    private IEnumerator ComputerMoveAlt1()   //left first
     {
-        yield return null;
-    }
-    
-    private IEnumerator ComputerMoveAlt2()
-    {
-        yield return null;
-    }
-    
-    private IEnumerator ComputerMoveAlt3()
-    {
-        yield return null;
+        hasCallComputer = true;
+        yield return new WaitForSeconds(1f);
+        bool hasAdd = false;
+        int t1;
+        t1 = Random.Range(0, 2);
+        for (int i = 0; i < 6; i++)
+        {
+            if (t1 == 0)
+            {
+                if (CanAdd(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f)))
+                {
+                    RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                    if (hit)
+                    {
+                        if (hit.transform.CompareTag("PlayerChess"))
+                        {
+                            StartCoroutine(AddChess(gamePlay.firstLeftPos + new Vector2(-i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                            hasAdd = true;
+                            break;
+                        }
+                    }       
+                }
+            }
+            else
+            {
+                if (CanAdd(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f)))
+                {
+                    RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f), new Vector2(0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                    if (hit)
+                    {
+                        if (hit.transform.CompareTag("PlayerChess"))
+                        {
+                            StartCoroutine(AddChess(gamePlay.firstLeftPos + new Vector2(-5 * 0.693f, 5 * 0.693f) - new Vector2(-i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                            hasAdd = true;
+                            break;
+                        }
+                    }       
+                }
+            }
+        }
+        if (!hasAdd)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if (t1 == 0)
+                {
+                    if (CanAdd(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f)))
+                    {
+                        RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                        if (hit)
+                        {
+                            if (hit.transform.CompareTag("PlayerChess"))
+                            {
+                                StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f) - new Vector2(i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                                hasAdd = true;
+                                break;
+                            }
+                        }       
+                    }
+                }
+                else
+                {
+                    if (CanAdd(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f)))
+                    {
+                        RaycastHit2D hit = Physics2D.Raycast(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), new Vector2(-0.5f, 0.5f), Mathf.Infinity, 1 << 6);
+                        if (hit)
+                        {
+                            if (hit.transform.CompareTag("PlayerChess"))
+                            {
+                                StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(i * 0.693f, i * 0.693f), gamePlay.computerChess));
+                                hasAdd = true;
+                                break;
+                            }
+                        }       
+                    }
+                }
+            }
+        }
+        if (!hasAdd)
+        {
+            StartCoroutine(AddChess(gamePlay.firstRightPos + new Vector2(5 * 0.693f, 5 * 0.693f), gamePlay.computerChess));
+        }
+        yield return new WaitForSeconds(1f);
+        gamePlay.isPlayerTurn = true;
     }
     
     private void Start()
@@ -191,29 +316,77 @@ public class MainChessNew : MonoBehaviour
             }
             else
             {
-                if (gamePlay.canCallComputer)
+                if (gamePlay.backGroundMusic.mode < 4)
                 {
-                    if (!hasCallComputer)
+                    if (gamePlay.canCallComputer)
                     {
-                        gamePlay.computerTurn.SetActive(true);
-                        gamePlay.playerTurn.SetActive(false);
-                        int t;
-                        t = Random.Range(0, 4);
-                        if (t == 0)
+                        if (!hasCallComputer)
                         {
-                            StartCoroutine(ComputerMove());
-                        } else if (t == 1)
-                        {
-                            StartCoroutine(ComputerMoveAlt1());
-                        } else if (t == 2)
-                        {
-                            StartCoroutine(ComputerMoveAlt2());
-                        }
-                        else
-                        {
-                            StartCoroutine(ComputerMoveAlt3());
+                            gamePlay.computerTurn.SetActive(true);
+                            gamePlay.playerTurn.SetActive(false);
+                            if (gamePlay.backGroundMusic.mode <= 2)
+                            {
+                                int t;
+                                t = Random.Range(0, 2);
+                                if (t == 0)
+                                {
+                                    StartCoroutine(ComputerMove());
+                                } else if (t == 1)
+                                {
+                                    StartCoroutine(ComputerMoveAlt1());
+                                }
+                            }
+                            else
+                            {
+                                RaycastHit2D[] res = new RaycastHit2D[6];
+                                int hits = Physics2D.RaycastNonAlloc(gamePlay.firstRightPos, _rightToLeftCastDir, res,
+                                    Mathf.Infinity, 1 << 6);
+                                int c1 = 0;
+                                for (int i = 0; i < hits; i++)
+                                {
+                                    if (res[i].transform.CompareTag("ComputerChess"))
+                                    {
+                                        c1++;
+                                    }
+                                }
+                                RaycastHit2D[] res2 = new RaycastHit2D[6];
+                                int hits2 = Physics2D.RaycastNonAlloc(gamePlay.firstLeftPos, _leftToRightCastDir, res2,
+                                    Mathf.Infinity, 1 << 6);
+                                int c2 = 0;
+                                for (int i = 0; i < hits2; i++)
+                                {
+                                    if (res2[i].transform.CompareTag("ComputerChess"))
+                                    {
+                                        c2++;
+                                    }
+                                }
+                                if (c1 < c2)
+                                {
+                                    StartCoroutine(ComputerMove());
+                                } else if (c1 > c2)
+                                {
+                                    StartCoroutine(ComputerMoveAlt1());
+                                }
+                                else
+                                {
+                                    int t;
+                                    t = Random.Range(0, 2);
+                                    if (t == 0)
+                                    {
+                                        StartCoroutine(ComputerMove());
+                                    } else if (t == 1)
+                                    {
+                                        StartCoroutine(ComputerMoveAlt1());
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+                else
+                {
+                    gamePlay.computerTurn.SetActive(true);
+                    gamePlay.playerTurn.SetActive(false);
                 }
             }
             // ChosePosChess(gamePlay.isPlayerTurn ? gamePlay.playerChess : gamePlay.computerChess);

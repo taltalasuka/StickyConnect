@@ -3,12 +3,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
-public class GamePlay : MonoBehaviour
+public class GamePlayNew : MonoBehaviour
 {
-    public Object playerChess;
-    public Object computerChess;
+    public Transform playerChess;
+    public Transform computerChess;
     public Vector2 firstRightPos = new Vector2(0.693f, -3.695f);
     public Vector2 firstLeftPos = new Vector2(-0.693f, -3.695f);
     public BackGroundMusic backGroundMusic;
@@ -19,7 +18,6 @@ public class GamePlay : MonoBehaviour
     public int playerRoundWin;
     public int computerRoundWin;
     public bool isDisabled;
-    //public bool[,] ChessGrid;
     public bool isPlayerTurn;
     private bool _isPlayerWin;
     public GameObject winImage;
@@ -37,8 +35,6 @@ public class GamePlay : MonoBehaviour
     public GameObject playerTurn;
     public GameObject computerTurn;
     public bool canCallComputer;
-    public TextMeshProUGUI playerModeText;
-    public GameObject playerModeEnd;
 
     public void PlayAgain()
     {
@@ -56,21 +52,9 @@ public class GamePlay : MonoBehaviour
                 image.sprite = starsSprite[0];
             }
         }
-
-        if (backGroundMusic.mode == 4)
-        {
-            playerModeEnd.SetActive(false);
-        }
         endCanvas.SetActive(false);
         hasEndRound = false;
         isDisabled = false;
-        // for (int i = 0; i < 6; i++)
-        // {
-        //     for (int j = 0; j < 6; j++)
-        //     {
-        //         ChessGrid[i, j] = false;
-        //     }
-        // }
         isPlayerTurn = true;
         canCallComputer = false;
     }
@@ -332,58 +316,39 @@ public class GamePlay : MonoBehaviour
         drawImage.SetActive(false);
         if (_isPlayerWin)
         {
-            if (backGroundMusic.mode < 4)
+            backGroundMusic.PlaySound(backGroundMusic.winSound);
+            bonusImage.SetActive(true);
+            if (playerRoundWin == 3)
             {
-                backGroundMusic.PlaySound(backGroundMusic.winSound);
-                bonusImage.SetActive(true);
-                if (playerRoundWin == 3)
-                {
-                    finalWinImage.SetActive(true);
-                    winImage.SetActive(false);
-                    bonusText.text = "+" + backGroundMusic.winReward * 2;
-                    backGroundMusic.playerD.totalCoin += backGroundMusic.winReward * 2;
-                    SaveSystem.SaveData(backGroundMusic.playerD);
-                }
-                else
-                {
-                    winImage.SetActive(true);
-                    finalWinImage.SetActive(false);
-                    bonusText.text = "+" + backGroundMusic.winReward;
-                    backGroundMusic.playerD.totalCoin += backGroundMusic.winReward;
-                    SaveSystem.SaveData(backGroundMusic.playerD);
-                }
-                loseImage.SetActive(false);
+                finalWinImage.SetActive(true);
+                winImage.SetActive(false);
+                bonusText.text = "+" + backGroundMusic.winReward * 2;
+                backGroundMusic.playerD.totalCoin += backGroundMusic.winReward * 2;
+                SaveSystem.SaveData(backGroundMusic.playerD);
             }
             else
             {
-                backGroundMusic.PlaySound(backGroundMusic.winSound);
-                playerModeEnd.SetActive(true);
-                playerModeText.text = "PLAYER 1 WIN!";
+                winImage.SetActive(true);
+                finalWinImage.SetActive(false);
+                bonusText.text = "+" + backGroundMusic.winReward;
+                backGroundMusic.playerD.totalCoin += backGroundMusic.winReward;
+                SaveSystem.SaveData(backGroundMusic.playerD);
             }
+            loseImage.SetActive(false);
         }
         else
         {
-            if (backGroundMusic.mode < 4)
-            {
-                backGroundMusic.PlaySound(backGroundMusic.loseSound);
-                winImage.SetActive(false);
-                finalWinImage.SetActive(false);
-                loseImage.SetActive(true);
-                bonusImage.SetActive(false);
-            }
-            else
-            {
-                backGroundMusic.PlaySound(backGroundMusic.winSound);
-                playerModeEnd.SetActive(true);
-                playerModeText.text = "PLAYER 2 WIN!";
-            }
+            backGroundMusic.PlaySound(backGroundMusic.loseSound);
+            winImage.SetActive(false);
+            finalWinImage.SetActive(false);
+            loseImage.SetActive(true);
+            bonusImage.SetActive(false);
         }
     }
     
     
     private void Awake()
     {
-        // ChessGrid = new bool[6,6];    // false: empty      true: has object
         isPlayerTurn = true;
         playerTurn.SetActive(false);
         computerTurn.SetActive(false);
@@ -395,7 +360,6 @@ public class GamePlay : MonoBehaviour
         }
         musicImage.sprite = musicSprites[backGroundMusic.isMuted ? 1 : 0];
         backGroundMusic.PlaySound(backGroundMusic.buttonSound);
-        playerModeEnd.SetActive(false);
     }
 
     private void Update()
@@ -411,3 +375,4 @@ public class GamePlay : MonoBehaviour
         }
     }
 }
+

@@ -13,6 +13,7 @@ public class BackGroundMusic : MonoBehaviour
     public AudioClip moveSound;
     public AudioClip dropSound;
     public AudioSource audioSource;
+    public int mode;
 
     public void PlaySound(AudioClip sound)
     {
@@ -23,6 +24,7 @@ public class BackGroundMusic : MonoBehaviour
     }
     private void Awake()
     {
+        Application.targetFrameRate = 120;
         GameObject[] goj = GameObject.FindGameObjectsWithTag("BackGroundMusic");
         if (goj.Length > 1)
         {

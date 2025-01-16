@@ -12,19 +12,37 @@ public class MainMenu : MonoBehaviour
     public Button[] buyButtons;
     public Button[] useButtons;
     public Button[] levelButtons;
+    public GameObject botPanel;
+    public GameObject diffPanel;
+
+    public void BotModeButton()
+    {
+        _backGroundMusic.PlaySound(_backGroundMusic.buttonSound);
+        botPanel.SetActive(true);
+        diffPanel.SetActive(false);
+    }
+
+    public void PlayerModeButton()
+    {
+        _backGroundMusic.mode = 4;
+        SceneManager.LoadScene(1);
+    }
 
     private void LoadGame(int difficultLevel)
     {
         if (difficultLevel == 0)
         {
             _backGroundMusic.winReward = 100;
+            _backGroundMusic.mode = 1;
         } else if (difficultLevel == 1)
         {
             _backGroundMusic.winReward = 200;
+            _backGroundMusic.mode = 2;
         }
         else
         {
             _backGroundMusic.winReward = 300;
+            _backGroundMusic.mode = 3;
         }
         SceneManager.LoadScene(1);
     }
@@ -101,6 +119,8 @@ public class MainMenu : MonoBehaviour
         _backGroundMusic.PlaySound(_backGroundMusic.buttonSound);
         shop.SetActive(false);
         difficulty.SetActive(true);
+        botPanel.SetActive(false);
+        diffPanel.SetActive(true);
     }
     
     private void Start()
@@ -149,5 +169,13 @@ public class MainMenu : MonoBehaviour
         }
         difficulty.SetActive(true);
         shop.SetActive(false);
+        diffPanel.SetActive(true);
+        botPanel.SetActive(false);
+    }
+    
+    //NEW
+    public void OnlineButton()
+    {
+        SceneManager.LoadScene(2);
     }
 }
